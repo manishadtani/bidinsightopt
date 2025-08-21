@@ -30,7 +30,7 @@ export const useFilterHandling = (perPage) => {
       searchParams.get("open_date_before") ||
       searchParams.get("closing_date_after") ||
       searchParams.get("closing_date_before") ||
-      searchParams.get("ordering"); // 🔥 FIXED: Added ordering check
+      searchParams.get("ordering");
 
     if (isInitialLoad) {
       if (hasFilterParams) {
@@ -40,7 +40,6 @@ export const useFilterHandling = (perPage) => {
         setFilters(decodedFilters);
         setAppliedFilters(decodedFilters);
       } else {
-      
         setFilters(DASHBOARD_CONSTANTS.DEFAULT_FILTERS);
         setAppliedFilters(DASHBOARD_CONSTANTS.DEFAULT_FILTERS);
         navigate("/dashboard?page=1&pageSize=25&bid_type=Active&ordering=closing_date", {
@@ -51,12 +50,10 @@ export const useFilterHandling = (perPage) => {
     } else if (hasFilterParams) {
       // Subsequent navigation with filters - restore them
       const decodedFilters = decodeUrlToFilters(searchParams);
-
       setFilters(decodedFilters);
       setAppliedFilters(decodedFilters);
     }
   }, [location.search, navigate, isInitialLoad]);
-
 
   // Filter apply handler
   const handleFiltersApply = useCallback((newFilters) => {
@@ -68,29 +65,57 @@ export const useFilterHandling = (perPage) => {
     navigate(`/dashboard?${queryString}`);
   }, [navigate, perPage]);
 
-  // Sort handler
+  // Sort handler - 🔥 FIXED: Preserve existing URL parameters including search term
   const handleSort = useCallback((field) => {
-    setFilters((prev) => {
-      const current = prev.ordering;
-      let newOrder;
+    const searchParams = new URLSearchParams(location.search);
+    
+    // Get current ordering from URL or appliedFilters
+    const currentOrdering = searchParams.get("ordering") || appliedFilters.ordering;
+    
+    // Determine new ordering
+    let newOrder;
+    if (currentOrdering === field) {
+      newOrder = `-${field}`;
+    } else if (currentOrdering === `-${field}`) {
+      newOrder = field;
+    } else {
+      newOrder = field;
+    }
 
-      if (current === field) {
-        newOrder = `-${field}`;
-      } else if (current === `-${field}`) {
-        newOrder = field;
-      } else {
-        newOrder = field;
-      }
+    // Create updated filters by preserving current appliedFilters and only changing ordering
+    const updatedFilters = { 
+      ...appliedFilters,  // This preserves entityType and all other filters
+      ordering: newOrder 
+    };
+    
+    // Update state
+    setFilters(updatedFilters);
+    setAppliedFilters(updatedFilters);
 
-      const updatedFilters = { ...prev, ordering: newOrder };
-      setAppliedFilters(updatedFilters);
+    // Build query string with all preserved filters
+    const queryString = buildQueryString(updatedFilters, currentPage, perPage);
+    
+    // 🔥 Preserve saved search ID and search term if they exist
+    const savedSearchId = searchParams.get("id");
+    const searchTerm = searchParams.get("search");
+    
+    let finalURL = `/dashboard?${queryString}`;
+    
+    // Add preserved parameters
+    const additionalParams = new URLSearchParams();
+    if (savedSearchId) {
+      additionalParams.set("id", savedSearchId);
+    }
+    if (searchTerm) {
+      additionalParams.set("search", searchTerm);
+    }
+    
+    if (additionalParams.toString()) {
+      finalURL += `&${additionalParams.toString()}`;
+    }
 
-      const queryString = buildQueryString(updatedFilters, currentPage, perPage);
-      navigate(`/dashboard?${queryString}`);
-
-      return updatedFilters;
-    });
-  }, [currentPage, perPage, navigate]);
+    navigate(finalURL);
+  }, [location.search, appliedFilters, currentPage, perPage, navigate]);
 
   return {
     filters,

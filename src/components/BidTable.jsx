@@ -45,12 +45,36 @@ const convertToCSV = (rows) => {
   return [headers.join(","), ...csvRows.map((r) => r.join(","))].join("\n");
 };
 
-const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "", currentSortOrder = "", onSort = () => { }, onEntityTypeChange = () => { } }, ref) => {
+const BidTable = forwardRef(({
+  bids = [],
+  totalCount = 0,
+  currentSortField = "",
+  currentSortOrder = "",
+  onSort = () => { },
+  onEntityTypeChange = () => { },
+  currentEntityType = "" // 🔥 This prop maintains the entity type
+}, ref) => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedEntity, setSelectedEntity] = useState("Entity Type");
   const dropdownRef = useRef(null);
+
+  // 🔥 Get display name for dropdown based on currentEntityType
+  const getSelectedEntityDisplay = () => {
+    if (!currentEntityType) return "Entity Type";
+
+    // Handle different cases of entity type values
+    switch (currentEntityType.toLowerCase()) {
+      case 'federal':
+        return "Federal";
+      case 'state':
+        return "State";
+      case 'local':
+        return "Local";
+      default:
+        return "Entity Type";
+    }
+  };
 
   useEffect(() => {
     setData([...bids]);
@@ -65,7 +89,7 @@ const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "",
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-    
+
   const handleRowClick = (id) => {
     console.log(id);
     navigate(`/summary/${id}`);
@@ -100,8 +124,8 @@ const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "",
   };
 
   const handleEntityTypeClick = (type) => {
-    setSelectedEntity(type);
-    onEntityTypeChange(type === "Select Entity" ? "" : type);
+    const entityValue = type === "Entity Type" ? "" : type.toLowerCase();
+    onEntityTypeChange(entityValue);
     setDropdownOpen(false);
   };
 
@@ -110,22 +134,22 @@ const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "",
       <table className="min-w-full table-auto text-sm text-center">
         <thead className="sticky top-0 bg-white/5 backdrop-blur-sm">
           <tr className="text-white/80 text-xs border-b border-white/20">
-
             <th className="px-4 py-4 font-inter text-lg relative">
               <div ref={dropdownRef} className="inline-block text-left">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2  px-3 py-1 rounded-full"
+                  className="flex items-center gap-2 px-3 py-1 rounded-full"
                 >
-                  {selectedEntity} <i className="fas fa-caret-down text-sm"></i>
+                  {getSelectedEntityDisplay()} <i className="fas fa-caret-down text-sm"></i>
                 </button>
                 {dropdownOpen && (
                   <div className="absolute mt-2 w-40 rounded-md bg-white text-black font-medium z-10">
-                    {["Select Entity", "Federal", "State", "Local"].map((type) => (
+                    {["Entity Type", "Federal", "State", "Local"].map((type) => (
                       <div
                         key={type}
                         onClick={() => handleEntityTypeClick(type)}
-                        className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${selectedEntity === type ? 'bg-gray-100 font-semibold' : ''}`}
+                        className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${getSelectedEntityDisplay() === type ? 'bg-gray-100 font-semibold' : ''
+                          }`}
                       >
                         {type}
                       </div>
@@ -155,11 +179,10 @@ const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "",
                   <div>
                     <p className="text-white/60 text-lg font-medium">No bids found</p>
                     <p className="text-white/40 text-sm mt-1">
-                      {selectedEntity && selectedEntity !== "Select Entity"
-                        ? `No bids available for ${selectedEntity} entity type`
+                      {currentEntityType
+                        ? `No bids available for ${getSelectedEntityDisplay()} entity type`
                         : 'Try adjusting your filters'}
                     </p>
-
                   </div>
                 </div>
               </td>
@@ -206,7 +229,7 @@ const BidTable = forwardRef(({ bids = [], totalCount = 0, currentSortField = "",
                   <td className="px-4 py-4 font-medium font-inter">{formatDate(bid.closing_date)}</td>
                   <td className="px-4 py-4 font-medium font-inter" title={countdownRaw}><span className="text-white">{countdownDisplay}</span></td>
                   <td className="px-4 py-4 font-medium font-inter">{statusLabel}</td>
-                  <td className="px-4 py-4 btn-box  text-center">
+                  <td className="px-4 py-4 btn-box text-center">
                     <button onClick={(e) => {
                       e.stopPropagation();
                       if (navigator.share) {

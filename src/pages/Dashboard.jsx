@@ -219,8 +219,16 @@ function Dashboard() {
     setAppliedFilters(updatedFilters);
     setCurrentPage(1);
 
+    const searchParams = new URLSearchParams(location.search);
     const queryString = buildQueryString(updatedFilters, 1, perPage);
-    navigate(`/dashboard?${queryString}`);
+
+    // 🔥 Preserve saved search ID if it exists
+    const savedSearchId = searchParams.get("id");
+    const finalURL = savedSearchId
+      ? `/dashboard?${queryString}&id=${savedSearchId}`
+      : `/dashboard?${queryString}`;
+
+    navigate(finalURL);
   };
 
   // 🔥 FETCH BIDS ON LOAD
@@ -231,28 +239,28 @@ function Dashboard() {
   }, [fetchBids, isInitialLoad]);
 
   useEffect(() => {
-  const searchParams = new URLSearchParams(location.search);
-  const savedSearchId = searchParams.get("id");
-  
-  if (savedSearchId && savedSearches.length > 0) {
-    // Find the saved search by ID
-    const matchedSearch = savedSearches.find((item) => item.id.toString() === savedSearchId);
-    
-    if (matchedSearch) {
-      console.log("🔥 Restoring saved search from URL:", matchedSearch.name);
-      
-      // Set the selected saved search state
-      setSelectedSavedSearch({
-        id: matchedSearch.id,
-        name: matchedSearch.name,
-        query_string: matchedSearch.query_string
-      });
+    const searchParams = new URLSearchParams(location.search);
+    const savedSearchId = searchParams.get("id");
+
+    if (savedSearchId && savedSearches.length > 0) {
+      // Find the saved search by ID
+      const matchedSearch = savedSearches.find((item) => item.id.toString() === savedSearchId);
+
+      if (matchedSearch) {
+        console.log("🔥 Restoring saved search from URL:", matchedSearch.name);
+
+        // Set the selected saved search state
+        setSelectedSavedSearch({
+          id: matchedSearch.id,
+          name: matchedSearch.name,
+          query_string: matchedSearch.query_string
+        });
+      }
+    } else if (!savedSearchId) {
+      // Clear selection if no ID in URL
+      setSelectedSavedSearch(null);
     }
-  } else if (!savedSearchId) {
-    // Clear selection if no ID in URL
-    setSelectedSavedSearch(null);
-  }
-}, [location.search, savedSearches]);
+  }, [location.search, savedSearches]);
 
   // 🔥 FETCH SAVED SEARCHES
   useEffect(() => {
@@ -516,7 +524,7 @@ function Dashboard() {
                 timezone={userTimezone}
                 bids={bidsInfo?.results || []}
                 onEntityTypeChange={handleEntityTypeChange}
-                currentEntityType={appliedFilters.entityType}
+                currentEntityType={appliedFilters.entityType || ""}
                 totalCount={bidsInfo?.count || 0}
                 currentSortField={appliedFilters.ordering || "closing_date"}
                 currentSortOrder={appliedFilters.ordering?.startsWith('-') ? 'desc' : 'asc'}

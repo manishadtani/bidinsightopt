@@ -873,7 +873,7 @@ useEffect(() => {
             <div>
               {/* Full Name */}
               <FormField
-                label="Full Name"
+                label="Full Name *"
                 type="text"
                 name="fullName"
                 placeholder="e.g. John Doe"
@@ -894,7 +894,7 @@ useEffect(() => {
 
               {/* Email with API Validation */}
               <FormField
-                label="Email"
+                label="Email *"
                 type="email"
                 name="email"
                 placeholder="e.g. jopseph.mark12@gmail.com"
@@ -913,7 +913,7 @@ useEffect(() => {
 
               {/* Password */}
               <FormPassword
-                label="Password"
+                label="Password *"
                 placeholder="e.g. m@rkJos6ph"
                 name="password"
                 id="password"
@@ -934,7 +934,7 @@ useEffect(() => {
 
               {/* Confirm Password */}
               <FormPassword
-                label="Confirm password"
+                label="Confirm password *"
                 placeholder="e.g. m@rkJos6ph"
                 name="confirmPassword"
                 id="confirmPassword"

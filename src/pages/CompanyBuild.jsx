@@ -349,7 +349,7 @@ function CompanyBuild() {
           >
             <div className="">
               <FormField
-                label="Company name"
+                label="Company name *"
                 type="text"
                 name="companyName"
                 placeholder="e.g. BidInsight "
@@ -361,7 +361,7 @@ function CompanyBuild() {
                 messageType={getMessageType("companyName")}
               />
               <FormField
-                label="Company FIEN or SSN"
+                label="Company FIEN or SSN *"
                 type="text"
                 name="companyFienOrSsn"
                 placeholder="e.g. XXXXXXXXX"
@@ -373,7 +373,7 @@ function CompanyBuild() {
                 messageType={getMessageType("companyFienOrSsn")}
               />
               <FormField
-                label="Company website"
+                label="Company website *"
                 type="text"
                 name="companyWebsite"
                 placeholder="e.g. www.mark-jospeh.com"
@@ -388,7 +388,7 @@ function CompanyBuild() {
 
               <div className="flex w-[100%] md:w-[90%] gap-4">
                 <FormSelect
-                  label="Year in business"
+                  label="Year in business *"
                   name="yearInBusiness"
                   value={fields.yearInBusiness}
                   onChange={handleChange}
@@ -404,7 +404,7 @@ function CompanyBuild() {
                   messageType={getMessageType("yearInBusiness")}
                 />
                 <FormSelect
-                  label="No. of employees"
+                  label="No. of employees *"
                   name="numberOfEmployees"
                   value={fields.numberOfEmployees}
                   onChange={handleChange}
@@ -425,7 +425,7 @@ function CompanyBuild() {
 
               <div className="flex w-[100%] md:w-[90%] gap-4">
                 <FormSelect
-                  label="State"
+                  label="State *"
                   name="state"
                   value={fields.state}
                   onChange={handleChange}
@@ -437,7 +437,7 @@ function CompanyBuild() {
                   touched={touched.state}
                 />
                 <FormSelect
-                  label="Target contract size"
+                  label="Target contract size *"
                   name="targetContractSize"
                   value={fields.targetContractSize}
                   onChange={handleChange}
